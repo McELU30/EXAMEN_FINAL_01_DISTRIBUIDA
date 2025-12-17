@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard - Barbería Tech</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: #e5e7eb;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+      }
+      .sidebar {
+        width: 250px;
+        background: #1e293b;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #334155;
+      }
+      .sidebar-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 30px;
+        color: #ffffff;
+      }
+      .nav-section {
+        margin-bottom: 20px;
+      }
+      .nav-section-title {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        padding-left: 10px;
+      }
+      .nav-link {
+        display: block;
+        padding: 12px 15px;
+        color: #cbd5e1;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-bottom: 5px;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+      .nav-link:hover {
+        background: #334155;
+      }
+      .nav-link.active {
+        background: #2563eb;
+        color: #ffffff;
+      }
+      .sidebar-buttons {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .btn-sidebar {
+        padding: 10px 15px;
+        border-radius: 6px;
+        border: 2px solid;
+        background: transparent;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+      .btn-sidebar.primary {
+        border-color: #2563eb;
+        color: #2563eb;
+      }
+      .btn-sidebar.primary:hover {
+        background: #2563eb;
+        color: #ffffff;
+      }
+      .btn-sidebar.secondary {
+        border-color: #64748b;
+        color: #cbd5e1;
+      }
+      .btn-sidebar.secondary:hover {
+        background: #64748b;
+      }
+      .btn-sidebar.danger {
+        border-color: #ef4444;
+        color: #ef4444;
+      }
+      .btn-sidebar.danger:hover {
+        background: #ef4444;
+        color: #ffffff;
+      }
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .top-bar {
+        background: #1e293b;
+        padding: 15px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #334155;
+      }
+      .top-bar-title {
+        font-size: 0.85rem;
+        color: #94a3b8;
+      }
+      .content-area {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 25px;
+        overflow-y: auto;
+      }
+      .section {
+        background: #1e293b;
+        border-radius: 8px;
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+      }
+      .section-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #ffffff;
+      }
+      .section-subtitle {
+        font-size: 0.9rem;
+        color: #94a3b8;
+        margin-bottom: 25px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #cbd5e1;
+        font-size: 0.9rem;
+      }
+      .form-input,
+      .form-select,
+      .form-textarea {
+        width: 100%;
+        padding: 10px 12px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        color: #e5e7eb;
+        font-size: 0.9rem;
+      }
+      .form-input:focus,
+      .form-select:focus,
+      .form-textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+      }
+      .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+      .form-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: auto;
+      }
+      .btn {
+        padding: 12px 24px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+      .btn-success {
+        background: #22c55e;
+        color: #022c22;
+      }
+      .btn-success:hover {
+        background: #16a34a;
+      }
+      .btn-secondary {
+        background: transparent;
+        border: 1px solid #64748b;
+        color: #cbd5e1;
+      }
+      .btn-secondary:hover {
+        background: #334155;
+      }
+      .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .btn-refresh {
+        padding: 8px 16px;
+        background: #2563eb;
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+      .btn-refresh:hover {
+        background: #1d4ed8;
+      }
+      .table-container {
+        overflow-x: auto;
+        flex: 1;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #334155;
+        font-size: 0.85rem;
+      }
+      th {
+        color: #94a3b8;
+        font-weight: 500;
+        background: #0f172a;
+      }
+      td {
+        color: #e5e7eb;
+      }
+      tr:hover {
+        background: #0f172a;
+      }
+      .msg {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+      }
+      .msg.error {
+        background: #7f1d1d;
+        color: #fca5a5;
+      }
+      .msg.success {
+        background: #14532d;
+        color: #86efac;
+      }
+      .hint {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 10px;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="sidebar-title">Administrador</div>
+      <div class="nav-section">
+        <div class="nav-section-title">Panel de citas</div>
+        <a href="#" class="nav-link active" onclick="mostrarSeccion('reservas')">Citas</a>
+        <a href="#" class="nav-link" onclick="mostrarSeccion('clientes')">Clientes</a>
+        <a href="#" class="nav-link" onclick="mostrarSeccion('barberos')">Barberos</a>
+        <a href="#" class="nav-link" onclick="mostrarSeccion('historial')">Historial</a>
+        <a href="#" class="nav-link" onclick="window.location.href='/admin.html'">Usuarios</a>
+      </div>
+      <div class="sidebar-buttons">
+        <button class="btn-sidebar primary" onclick="window.location.href='/reservar.html'">
+          Nueva Reserva
+        </button>
+        <button class="btn-sidebar secondary" onclick="window.location.href='/admin.html'">
+          Panel Admin
+        </button>
+        <button class="btn-sidebar danger" id="btn-logout">Cerrar Sesión</button>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="top-bar">
+        <div class="top-bar-title">Sistema Barbería Tech</div>
+        <div style="color: #cbd5e1; font-size: 0.9rem;" id="user-info">Cargando...</div>
+      </div>
+
+      <div class="content-area">
+        <!-- Sección izquierda: Formulario de reserva -->
+        <div class="section">
+          <h2 class="section-title">Agendar una Cita</h2>
+          <p class="section-subtitle">Nuevo / Editar Cita</p>
+
+          <form id="form-reserva">
+            <div class="form-group">
+              <label class="form-label">Cliente</label>
+              <select class="form-select" id="select-cliente" required>
+                <option value="">-- Seleccione cliente --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Barbero</label>
+              <select class="form-select" id="select-barbero" required>
+                <option value="">-- Seleccione barbero --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Horario Disponible</label>
+              <select class="form-select" id="select-disponibilidad" required>
+                <option value="">-- Seleccione horario --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Motivo</label>
+              <textarea
+                class="form-textarea"
+                id="input-motivo"
+                placeholder="Especifica el tipo de corte o servicio..."
+              ></textarea>
+            </div>
+
+            <div class="form-buttons">
+              <button type="submit" class="btn btn-success">Guardar Cita</button>
+              <button type="button" class="btn btn-secondary" onclick="limpiarFormulario()">
+                Cancelar
+              </button>
+            </div>
+          </form>
+
+          <div id="msg-form" class="msg" style="display: none;"></div>
+          <p class="hint">
+            Consejo: selecciona barbero y horario disponible para crear la cita.
+          </p>
+        </div>
+
+        <!-- Sección derecha: Tabla de próximas citas -->
+        <div class="section">
+          <div class="table-header">
+            <h2 class="section-title" style="margin: 0;">Próximas citas</h2>
+            <button class="btn-refresh" onclick="cargarReservas()">Refrescar</button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Hora</th>
+                  <th>Cliente</th>
+                  <th>Barbero</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-citas">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: #64748b;">
+                    Cargando citas...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = '/api/auth';
+      const API_RESERVAS = '/api/reservas';
+
+      function getToken() {
+        return localStorage.getItem('token');
+      }
+
+      function ensureAuth() {
+        const token = getToken();
+        if (!token) {
+          window.location.href = '/login.html';
+        }
+        return token;
+      }
+
+      async function loadDashboard() {
+        const token = ensureAuth();
+        try {
+          const res = await fetch(API_BASE + '/dashboard', {
+            headers: { 'x-auth-token': token },
+          });
+          if (res.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            window.location.href = '/login.html';
+            return;
+          }
+          const data = await res.json();
+          const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+          document.getElementById('user-info').textContent =
+            usuario.nombre || data.usuario?.nombre || 'Usuario';
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function cargarBarberos() {
+        try {
+          const res = await fetch(API_RESERVAS + '/barberos');
+          const data = await res.json();
+          const select = document.getElementById('select-barbero');
+          select.innerHTML = '<option value="">-- Seleccione barbero --</option>';
+          data.forEach((b) => {
+            const opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = `${b.nombre} (${b.especialidad})`;
+            select.appendChild(opt);
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function cargarClientes() {
+        const token = ensureAuth();
+        try {
+          const res = await fetch(API_BASE + '/admin/usuarios', {
+            headers: { 'x-auth-token': token },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const select = document.getElementById('select-cliente');
+            select.innerHTML = '<option value="">-- Seleccione cliente --</option>';
+            data.forEach((u) => {
+              const opt = document.createElement('option');
+              opt.value = u.id;
+              opt.textContent = `${u.nombre} (${u.email})`;
+              select.appendChild(opt);
+            });
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function cargarDisponibilidad() {
+        try {
+          const res = await fetch(API_RESERVAS + '/disponibilidad');
+          const data = await res.json();
+          const select = document.getElementById('select-disponibilidad');
+          select.innerHTML = '<option value="">-- Seleccione horario --</option>';
+          data.forEach((slot) => {
+            const cuposDisp = slot.cupos_totales - slot.cupos_reservados;
+            if (cuposDisp > 0) {
+              const fecha = new Date(slot.fecha_hora);
+              const opt = document.createElement('option');
+              opt.value = slot.id;
+              opt.textContent = `${fecha.toLocaleString('es-ES')} - ${cuposDisp} cupos libres`;
+              select.appendChild(opt);
+            }
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function cargarReservas() {
+        const token = ensureAuth();
+        try {
+          // Intentar cargar como admin primero, si falla cargar como usuario normal
+          let res = await fetch(API_RESERVAS + '/admin', {
+            headers: { 'x-auth-token': token },
+          });
+          
+          // Si no es admin (403), cargar reservas del usuario actual
+          if (res.status === 403) {
+            res = await fetch(API_RESERVAS + '/mis-reservas', {
+              headers: { 'x-auth-token': token },
+            });
+          }
+          
+          const tbody = document.getElementById('tabla-citas');
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            tbody.innerHTML =
+              `<tr><td colspan="6" style="text-align: center; color: #ef4444;">${errorData.error || 'Error al cargar citas'}</td></tr>`;
+            return;
+          }
+          const data = await res.json();
+          if (data.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="6" style="text-align: center; color: #64748b;">No hay citas registradas</td></tr>';
+            return;
+          }
+          tbody.innerHTML = '';
+          data.forEach((r) => {
+            const fecha = new Date(r.fecha_hora_cita);
+            const tr = document.createElement('tr');
+            // Si es admin, mostrar nombre del cliente, si no, mostrar "Mi cita"
+            const nombreCliente = r.nombre_cliente || (r.id_usuario === parseInt(localStorage.getItem('usuario') ? JSON.parse(localStorage.getItem('usuario')).id : 0) ? 'Mi cita' : `Usuario ${r.id_usuario}`);
+            tr.innerHTML = `
+              <td>${r.id}</td>
+              <td>${fecha.toLocaleDateString('es-ES')}</td>
+              <td>${fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</td>
+              <td>${nombreCliente}</td>
+              <td>${r.nombre_barbero || `Barbero ${r.id_barbero}`}</td>
+              <td><span style="padding: 4px 8px; border-radius: 4px; background: ${r.estado_pdf === 'LISTO' ? '#14532d' : r.estado_pdf === 'GENERANDO' ? '#854d0e' : '#1e293b'}; color: ${r.estado_pdf === 'LISTO' ? '#86efac' : r.estado_pdf === 'GENERANDO' ? '#fde047' : '#94a3b8'};">${r.estado_pdf}</span></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error(err);
+          document.getElementById('tabla-citas').innerHTML =
+            '<tr><td colspan="6" style="text-align: center; color: #ef4444;">Error de red</td></tr>';
+        }
+      }
+
+      function mostrarMensaje(texto, esExito = false) {
+        const msg = document.getElementById('msg-form');
+        msg.textContent = texto;
+        msg.className = 'msg ' + (esExito ? 'success' : 'error');
+        msg.style.display = 'block';
+        setTimeout(() => {
+          msg.style.display = 'none';
+        }, 5000);
+      }
+
+      function limpiarFormulario() {
+        document.getElementById('form-reserva').reset();
+        document.getElementById('msg-form').style.display = 'none';
+      }
+
+      function mostrarSeccion(seccion) {
+        document.querySelectorAll('.nav-link').forEach((link) => {
+          link.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        // Aquí puedes agregar lógica para cambiar el contenido según la sección
+      }
+
+      document.getElementById('form-reserva').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = ensureAuth();
+        const disponibilidadId = document.getElementById('select-disponibilidad').value;
+        const barberoId = document.getElementById('select-barbero').value;
+
+        if (!disponibilidadId || !barberoId) {
+          mostrarMensaje('Completa todos los campos obligatorios', false);
+          return;
+        }
+
+        try {
+          const res = await fetch(API_RESERVAS + '/reservar', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-auth-token': token,
+            },
+            body: JSON.stringify({
+              id_disponibilidad: disponibilidadId,
+              id_barbero: barberoId,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            mostrarMensaje(data.error || 'Error al crear la reserva', false);
+            console.error('Error del servidor:', data);
+            return;
+          }
+          mostrarMensaje('Cita guardada correctamente. Código: ' + (data.codigo_atencion || ''), true);
+          limpiarFormulario();
+          cargarReservas();
+          cargarDisponibilidad();
+        } catch (err) {
+          console.error('Error completo:', err);
+          mostrarMensaje('Error de red al crear la reserva. Verifica que el servidor esté corriendo.', false);
+        }
+      });
+
+      document.getElementById('btn-logout').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        window.location.href = '/login.html';
+      });
+
+      // Inicializar
+      ensureAuth();
+      loadDashboard();
+      cargarBarberos();
+      cargarClientes();
+      cargarDisponibilidad();
+      cargarReservas();
+    </script>
+  </body>
+</html>

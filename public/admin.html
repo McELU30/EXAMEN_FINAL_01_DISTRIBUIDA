@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Administrador - Barbería Tech</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #020617;
+        color: #e5e7eb;
+        margin: 0;
+      }
+      header {
+        background: #111827;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo {
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      main {
+        padding: 20px;
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid #1f2937;
+      }
+      .tab {
+        padding: 10px 16px;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: #9ca3af;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      .tab.active {
+        color: #22c55e;
+        border-bottom-color: #22c55e;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+      }
+      .card {
+        background: #020617;
+        border-radius: 8px;
+        border: 1px solid #1f2937;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+      }
+      th,
+      td {
+        border: 1px solid #1f2937;
+        padding: 6px 8px;
+        font-size: 0.85rem;
+      }
+      th {
+        background: #0b1120;
+      }
+      button {
+        padding: 6px 10px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+      .btn-primary {
+        background: #22c55e;
+        color: #022c22;
+        font-weight: bold;
+      }
+      .btn-danger {
+        background: #ef4444;
+        color: #fef2f2;
+      }
+      .btn-secondary {
+        background: transparent;
+        color: #e5e7eb;
+        border: 1px solid #374151;
+      }
+      input {
+        padding: 6px 8px;
+        border-radius: 4px;
+        border: 1px solid #374151;
+        background: #020617;
+        color: #e5e7eb;
+        width: 100%;
+        margin-bottom: 6px;
+      }
+      label {
+        font-size: 0.85rem;
+        display: block;
+        margin-bottom: 2px;
+      }
+      .msg {
+        font-size: 0.85rem;
+        margin-top: 8px;
+        min-height: 18px;
+      }
+      .error {
+        color: #f97373;
+      }
+      .ok {
+        color: #4ade80;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">Barbería Tech - Panel Administrador</div>
+      <div>
+        <button
+          class="btn-secondary"
+          onclick="window.location.href = '/dashboard.html'"
+        >
+          Volver al Dashboard
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <div class="tabs">
+        <button class="tab active" onclick="mostrarTab('reservas')">Reservas</button>
+        <button class="tab" onclick="mostrarTab('usuarios')">Usuarios</button>
+      </div>
+
+      <!-- TAB RESERVAS -->
+      <div id="tab-reservas" class="tab-content active">
+        <div class="card">
+          <h2>Reservas registradas</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>ID Usuario</th>
+                <th>ID Barbero</th>
+                <th>Fecha y hora</th>
+                <th>Código</th>
+                <th>Estado PDF</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-reservas"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Editar / Eliminar reserva</h3>
+          <p style="font-size: 0.85rem; color: #9ca3af">
+            Selecciona una reserva de la tabla para cargarla aquí, luego puedes
+            actualizar el barbero o la fecha/hora, o eliminarla.
+          </p>
+          <label for="reserva_id">ID Reserva</label>
+          <input type="number" id="reserva_id" readonly />
+
+          <label for="reserva_id_barbero">ID Barbero</label>
+          <input type="number" id="reserva_id_barbero" />
+
+          <label for="reserva_fecha">Fecha y hora (YYYY-MM-DD HH:MM:SS)</label>
+          <input type="text" id="reserva_fecha" />
+
+          <button class="btn-primary" id="btn-guardar">Guardar cambios</button>
+          <button class="btn-danger" id="btn-eliminar">Eliminar reserva</button>
+          <div id="msg-reservas" class="msg"></div>
+        </div>
+      </div>
+
+      <!-- TAB USUARIOS -->
+      <div id="tab-usuarios" class="tab-content">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h2 style="margin: 0;">Usuarios registrados</h2>
+            <button class="btn-secondary" onclick="cargarUsuarios()" style="font-size: 0.85rem;">
+              🔄 Refrescar
+            </button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Fecha registro</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-usuarios"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Crear / Editar usuario</h3>
+          <p style="font-size: 0.85rem; color: #9ca3af">
+            Completa los campos para crear un nuevo usuario o selecciona uno de la tabla para editarlo.
+          </p>
+          <label for="usuario_id">ID Usuario (auto)</label>
+          <input type="number" id="usuario_id" readonly />
+
+          <label for="usuario_nombre">Nombre</label>
+          <input type="text" id="usuario_nombre" />
+
+          <label for="usuario_email">Email</label>
+          <input type="email" id="usuario_email" />
+
+          <label for="usuario_password">Contraseña (dejar vacío si no quieres cambiarla)</label>
+          <input type="password" id="usuario_password" />
+
+          <label for="usuario_telefono">Teléfono</label>
+          <input type="text" id="usuario_telefono" />
+
+          <button class="btn-primary" id="btn-guardar-usuario">Guardar usuario</button>
+          <button class="btn-danger" id="btn-eliminar-usuario">Eliminar usuario</button>
+          <button class="btn-secondary" id="btn-limpiar-usuario">Limpiar formulario</button>
+          <div id="msg-usuarios" class="msg"></div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const API_RESERVAS = '/api/reservas';
+      const API_AUTH = '/api/auth';
+
+      function getToken() {
+        return localStorage.getItem('token');
+      }
+
+      function ensureAuth() {
+        const token = getToken();
+        if (!token) {
+          window.location.href = '/login.html';
+        }
+        return token;
+      }
+
+      function setMsg(text, ok = false, tipo = 'reservas') {
+        const el = document.getElementById('msg-' + tipo);
+        el.textContent = text || '';
+        el.className = 'msg ' + (ok ? 'ok' : 'error');
+      }
+
+      function mostrarTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('tab-' + tab).classList.add('active');
+        if (tab === 'usuarios') {
+          cargarUsuarios();
+        }
+      }
+
+      function seleccionarReserva(reserva) {
+        document.getElementById('reserva_id').value = reserva.id;
+        document.getElementById('reserva_id_barbero').value =
+          reserva.id_barbero || '';
+        document.getElementById('reserva_fecha').value =
+          reserva.fecha_hora_cita || '';
+      }
+
+      async function cargarReservas() {
+        setMsg('', false, 'reservas');
+        const token = ensureAuth();
+        try {
+          const res = await fetch(API_RESERVAS + '/admin', {
+            headers: { 'x-auth-token': token },
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setMsg(data.error || 'Error al obtener reservas', false, 'reservas');
+            return;
+          }
+          const tbody = document.getElementById('tabla-reservas');
+          tbody.innerHTML = '';
+          data.forEach((r) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${r.id}</td>
+              <td>${r.id_usuario}</td>
+              <td>${r.id_barbero}</td>
+              <td>${new Date(r.fecha_hora_cita).toLocaleString()}</td>
+              <td>${r.codigo_atencion}</td>
+              <td>${r.estado_pdf}</td>
+              <td><button class="btn-secondary btn-sm">Editar</button></td>
+            `;
+            tr.querySelector('button').addEventListener('click', () =>
+              seleccionarReserva(r)
+            );
+            tbody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error(err);
+          setMsg('Error de red al obtener reservas', false, 'reservas');
+        }
+      }
+
+      async function guardarCambios() {
+        setMsg('', false, 'reservas');
+        const token = ensureAuth();
+        const id = parseInt(document.getElementById('reserva_id').value, 10);
+        const id_barbero = parseInt(
+          document.getElementById('reserva_id_barbero').value,
+          10
+        );
+        const fecha_hora_cita =
+          document.getElementById('reserva_fecha').value.trim();
+
+        if (!id) {
+          setMsg('Debes seleccionar una reserva de la tabla.', false, 'reservas');
+          return;
+        }
+
+        if (!id_barbero && !fecha_hora_cita) {
+          setMsg('Debes ingresar al menos un campo para actualizar.', false, 'reservas');
+          return;
+        }
+
+        try {
+          const res = await fetch(API_RESERVAS + '/admin/' + id, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-auth-token': token,
+            },
+            body: JSON.stringify({ id_barbero, fecha_hora_cita }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setMsg(data.error || 'Error al actualizar la reserva', false, 'reservas');
+            return;
+          }
+          setMsg('Reserva actualizada correctamente.', true, 'reservas');
+          cargarReservas();
+        } catch (err) {
+          console.error(err);
+          setMsg('Error de red al actualizar la reserva', false, 'reservas');
+        }
+      }
+
+      async function eliminarReserva() {
+        setMsg('', false, 'reservas');
+        const token = ensureAuth();
+        const id = parseInt(document.getElementById('reserva_id').value, 10);
+        if (!id) {
+          setMsg('Debes seleccionar una reserva de la tabla.', false, 'reservas');
+          return;
+        }
+
+        if (!confirm('¿Seguro que deseas eliminar esta reserva?')) {
+          return;
+        }
+
+        try {
+          const res = await fetch(API_RESERVAS + '/admin/' + id, {
+            method: 'DELETE',
+            headers: { 'x-auth-token': token },
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setMsg(data.error || 'Error al eliminar la reserva', false, 'reservas');
+            return;
+          }
+          setMsg('Reserva eliminada correctamente.', true, 'reservas');
+          document.getElementById('reserva_id').value = '';
+          document.getElementById('reserva_id_barbero').value = '';
+          document.getElementById('reserva_fecha').value = '';
+          cargarReservas();
+        } catch (err) {
+          console.error(err);
+          setMsg('Error de red al eliminar la reserva', false, 'reservas');
+        }
+      }
+
+      async function cargarUsuarios() {
+        setMsg('', false, 'usuarios');
+        const token = ensureAuth();
+        try {
+          const res = await fetch(API_AUTH + '/admin/usuarios', {
+            headers: { 'x-auth-token': token },
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setMsg(data.error || 'Error al obtener usuarios', false, 'usuarios');
+            return;
+          }
+          const tbody = document.getElementById('tabla-usuarios');
+          tbody.innerHTML = '';
+          
+          if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #9ca3af;">No hay usuarios registrados</td></tr>';
+            return;
+          }
+          
+          data.forEach((u) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${u.id}</td>
+              <td>${u.nombre}</td>
+              <td>${u.email}</td>
+              <td>${u.telefono || '-'}</td>
+              <td>${new Date(u.fecha_registro).toLocaleDateString()}</td>
+              <td><button class="btn-secondary btn-sm">Editar</button></td>
+            `;
+            tr.querySelector('button').addEventListener('click', () =>
+              seleccionarUsuario(u)
+            );
+            tbody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error(err);
+          setMsg('Error de red al obtener usuarios', false, 'usuarios');
+        }
+      }
+
+      function seleccionarUsuario(usuario) {
+        document.getElementById('usuario_id').value = usuario.id;
+        document.getElementById('usuario_nombre').value = usuario.nombre || '';
+        document.getElementById('usuario_email').value = usuario.email || '';
+        document.getElementById('usuario_telefono').value = usuario.telefono || '';
+        document.getElementById('usuario_password').value = '';
+      }
+
+      async function guardarUsuario() {
+        setMsg('', false, 'usuarios');
+        const token = ensureAuth();
+        const id = parseInt(document.getElementById('usuario_id').value, 10);
+        const nombre = document.getElementById('usuario_nombre').value.trim();
+        const email = document.getElementById('usuario_email').value.trim();
+        const password = document.getElementById('usuario_password').value.trim();
+        const telefono = document.getElementById('usuario_telefono').value.trim();
+
+        if (!nombre || !email) {
+          setMsg('Nombre y email son obligatorios.', false, 'usuarios');
+          return;
+        }
+
+        try {
+          let res;
+          if (id) {
+            // Actualizar usuario existente
+            res = await fetch(API_AUTH + '/admin/usuarios/' + id, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-auth-token': token,
+              },
+              body: JSON.stringify({ nombre, email, password: password || undefined, telefono }),
+            });
+          } else {
+            // Crear nuevo usuario
+            if (!password) {
+              setMsg('La contraseña es obligatoria para crear un nuevo usuario.', false, 'usuarios');
+              return;
+            }
+            res = await fetch(API_AUTH + '/admin/usuarios', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-auth-token': token,
+              },
+              body: JSON.stringify({ nombre, email, password, telefono }),
+            });
+          }
+
+          const data = await res.json();
+          if (!res.ok) {
+            setMsg(data.error || 'Error al guardar el usuario', false, 'usuarios');
+            return;
+          }
+          setMsg(id ? 'Usuario actualizado correctamente.' : 'Usuario creado correctamente.', true, 'usuarios');
+          document.getElementById('btn-limpiar-usuario').click();
+          cargarUsuarios();
+        } catch (err) {
+          console.error(err);
+          setMsg('Error de red al guardar el usuario', false, 'usuarios');
+        }
+      }
+
+      async function eliminarUsuario() {
+        setMsg('', false, 'usuarios');
+        const token = ensureAuth();
+        const id = parseInt(document.getElementById('usuario_id').value, 10);
+        if (!id) {
+          setMsg('Debes seleccionar un usuario de la tabla.', false, 'usuarios');
+          return;
+        }
+
+        if (!confirm('¿Seguro que deseas eliminar este usuario?')) {
+          return;
+        }
+
+        try {
+          const res = await fetch(API_AUTH + '/admin/usuarios/' + id, {
+            method: 'DELETE',
+            headers: { 'x-auth-token': token },
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setMsg(data.error || 'Error al eliminar el usuario', false, 'usuarios');
+            return;
+          }
+          setMsg('Usuario eliminado correctamente.', true, 'usuarios');
+          document.getElementById('btn-limpiar-usuario').click();
+          cargarUsuarios();
+        } catch (err) {
+          console.error(err);
+          setMsg('Error de red al eliminar el usuario', false, 'usuarios');
+        }
+      }
+
+      function limpiarFormularioUsuario() {
+        document.getElementById('usuario_id').value = '';
+        document.getElementById('usuario_nombre').value = '';
+        document.getElementById('usuario_email').value = '';
+        document.getElementById('usuario_password').value = '';
+        document.getElementById('usuario_telefono').value = '';
+      }
+
+      document
+        .getElementById('btn-guardar')
+        .addEventListener('click', guardarCambios);
+      document
+        .getElementById('btn-eliminar')
+        .addEventListener('click', eliminarReserva);
+      document
+        .getElementById('btn-guardar-usuario')
+        .addEventListener('click', guardarUsuario);
+      document
+        .getElementById('btn-eliminar-usuario')
+        .addEventListener('click', eliminarUsuario);
+      document
+        .getElementById('btn-limpiar-usuario')
+        .addEventListener('click', limpiarFormularioUsuario);
+
+      ensureAuth();
+      cargarReservas();
+    </script>
+  </body>
+  </html>
+
+

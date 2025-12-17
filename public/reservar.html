@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reservar - Barbería Tech</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #020617;
+        color: #e5e7eb;
+        margin: 0;
+      }
+      header {
+        background: #111827;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo {
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      main {
+        padding: 20px;
+      }
+      .card {
+        background: #020617;
+        border-radius: 8px;
+        border: 1px solid #1f2937;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+      }
+      th,
+      td {
+        border: 1px solid #1f2937;
+        padding: 6px 8px;
+        font-size: 0.85rem;
+      }
+      th {
+        background: #0b1120;
+      }
+      button {
+        padding: 6px 10px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+      .btn-primary {
+        background: #22c55e;
+        color: #022c22;
+        font-weight: bold;
+      }
+      .btn-secondary {
+        background: transparent;
+        color: #e5e7eb;
+        border: 1px solid #374151;
+      }
+      .msg {
+        font-size: 0.85rem;
+        margin-top: 8px;
+        min-height: 18px;
+      }
+      .error {
+        color: #f97373;
+      }
+      .ok {
+        color: #4ade80;
+      }
+      input,
+      select {
+        padding: 6px 8px;
+        margin-top: 4px;
+        border-radius: 4px;
+        border: 1px solid #374151;
+        background: #020617;
+        color: #e5e7eb;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">Barbería Tech - Reservas</div>
+      <div>
+        <button
+          class="btn-secondary"
+          onclick="window.location.href = '/dashboard.html'"
+        >
+          Volver al Dashboard
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <div class="card">
+        <h3>Nueva reserva</h3>
+        <label for="select_barbero">Barbero</label>
+        <select id="select_barbero"></select>
+
+        <label for="select_disponibilidad">Horario disponible</label>
+        <select id="select_disponibilidad"></select>
+
+        <button class="btn-primary" id="btn-reservar">Reservar</button>
+        <div id="msg" class="msg"></div>
+        <div id="estado-pdf" class="msg"></div>
+      </div>
+    </main>
+
+    <script>
+      const API_RESERVAS = '/api/reservas';
+
+      function getToken() {
+        return localStorage.getItem('token');
+      }
+
+      function ensureAuth() {
+        const token = getToken();
+        if (!token) {
+          window.location.href = '/login.html';
+        }
+        return token;
+      }
+
+      function setMsg(text, ok = false) {
+        const el = document.getElementById('msg');
+        el.textContent = text || '';
+        el.className = 'msg ' + (ok ? 'ok' : 'error');
+      }
+
+      function setEstadoPdf(text) {
+        const el = document.getElementById('estado-pdf');
+        el.textContent = text || '';
+      }
+
+      async function cargarDisponibilidad() {
+        try {
+          const res = await fetch(API_RESERVAS + '/disponibilidad');
+          const data = await res.json();
+          const selectDisp = document.getElementById('select_disponibilidad');
+          selectDisp.innerHTML = '';
+          data.forEach((slot) => {
+            const cuposDisp = slot.cupos_totales - slot.cupos_reservados;
+            if (cuposDisp > 0) {
+              const opt = document.createElement('option');
+              opt.value = slot.id;
+              opt.textContent = `${new Date(
+                slot.fecha_hora
+              ).toLocaleString()} - libres: ${cuposDisp}`;
+              selectDisp.appendChild(opt);
+            }
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function cargarBarberos() {
+        try {
+          const res = await fetch(API_RESERVAS + '/barberos');
+          const data = await res.json();
+          const selectBarbero = document.getElementById('select_barbero');
+          selectBarbero.innerHTML = '';
+          data.forEach((b) => {
+            const opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = `${b.nombre} (${b.especialidad})`;
+            selectBarbero.appendChild(opt);
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function crearReserva() {
+        setMsg('');
+        setEstadoPdf('');
+        const token = ensureAuth();
+
+        const id_disponibilidad = parseInt(
+          document.getElementById('select_disponibilidad').value,
+          10
+        );
+        const id_barbero = parseInt(
+          document.getElementById('select_barbero').value,
+          10
+        );
+
+        if (!id_disponibilidad || !id_barbero) {
+          setMsg('Debes ingresar ID de disponibilidad e ID de barbero.');
+          return;
+        }
+
+        try {
+          const res = await fetch(API_RESERVAS + '/reservar', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-auth-token': token,
+            },
+            body: JSON.stringify({ id_disponibilidad, id_barbero }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setMsg(data.error || 'Error al crear la reserva');
+            return;
+          }
+
+          setMsg(
+            data.message + ' Código de atención: ' + data.codigo_atencion,
+            true
+          );
+
+          // Polling del estado del PDF
+          const codigo = data.codigo_atencion;
+          setEstadoPdf('Generando ficha PDF...');
+
+          const interval = setInterval(async () => {
+            try {
+              const r = await fetch(
+                API_RESERVAS + '/estado-pdf/' + encodeURIComponent(codigo),
+                {
+                  headers: { 'x-auth-token': token },
+                }
+              );
+              const d = await r.json();
+              if (!r.ok) {
+                setEstadoPdf('Error al consultar estado PDF');
+                clearInterval(interval);
+                return;
+              }
+
+              setEstadoPdf('Estado PDF: ' + d.estado_pdf);
+              if (d.estado_pdf === 'LISTO') {
+                clearInterval(interval);
+              }
+            } catch (err) {
+              console.error(err);
+              setEstadoPdf('Error al consultar estado PDF');
+              clearInterval(interval);
+            }
+          }, 1000);
+
+          // Recargar la lista de disponibilidad
+          cargarDisponibilidad();
+        } catch (err) {
+          console.error(err);
+          setMsg('Error de red al crear la reserva');
+        }
+      }
+
+      document
+        .getElementById('btn-reservar')
+        .addEventListener('click', crearReserva);
+
+      ensureAuth();
+      cargarBarberos();
+      cargarDisponibilidad();
+    </script>
+  </body>
+  </html>
+
+

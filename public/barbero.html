@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Panel Barbero - Barbería Tech</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #020617;
+        color: #e5e7eb;
+        margin: 0;
+      }
+      header {
+        background: #111827;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo {
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      main {
+        padding: 20px;
+      }
+      .card {
+        background: #020617;
+        border-radius: 8px;
+        border: 1px solid #1f2937;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+      }
+      label {
+        font-size: 0.85rem;
+        display: block;
+        margin-bottom: 4px;
+      }
+      input {
+        padding: 6px 8px;
+        border-radius: 4px;
+        border: 1px solid #374151;
+        background: #020617;
+        color: #e5e7eb;
+        margin-right: 8px;
+      }
+      button {
+        padding: 6px 10px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+      .btn-primary {
+        background: #22c55e;
+        color: #022c22;
+        font-weight: bold;
+      }
+      .btn-secondary {
+        background: transparent;
+        color: #e5e7eb;
+        border: 1px solid #374151;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+      }
+      th,
+      td {
+        border: 1px solid #1f2937;
+        padding: 6px 8px;
+        font-size: 0.85rem;
+      }
+      th {
+        background: #0b1120;
+      }
+      .info {
+        font-size: 0.85rem;
+        color: #9ca3af;
+      }
+      .msg {
+        font-size: 0.85rem;
+        margin-top: 8px;
+        min-height: 18px;
+      }
+      .error {
+        color: #f97373;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">Barbería Tech - Panel de Barbero</div>
+      <div>
+        <button
+          class="btn-secondary"
+          onclick="window.location.href = '/dashboard.html'"
+        >
+          Volver al Dashboard
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <div class="card">
+        <h2>Consultar citas por Barbero</h2>
+        <p class="info">
+          Ingresa tu ID de barbero para ver todas las citas registradas a tu
+          nombre.
+        </p>
+        <label for="id_barbero">ID Barbero</label>
+        <input type="number" id="id_barbero" />
+        <button class="btn-primary" id="btn-cargar">Cargar citas</button>
+        <div id="msg" class="msg"></div>
+      </div>
+
+      <div class="card">
+        <h3>Reservas del barbero</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha y hora</th>
+              <th>ID Usuario</th>
+              <th>Código atención</th>
+              <th>Estado PDF</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-reservas"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <script>
+      const API_RESERVAS = '/api/reservas';
+
+      function getToken() {
+        return localStorage.getItem('token');
+      }
+
+      function ensureAuth() {
+        const token = getToken();
+        if (!token) {
+          window.location.href = '/login.html';
+        }
+        return token;
+      }
+
+      function setMsg(text) {
+        const el = document.getElementById('msg');
+        el.textContent = text || '';
+        el.className = 'msg ' + (text ? 'error' : '');
+      }
+
+      async function cargarReservasBarbero() {
+        setMsg('');
+        const token = ensureAuth();
+        const idBarbero = parseInt(
+          document.getElementById('id_barbero').value,
+          10
+        );
+
+        if (!idBarbero) {
+          setMsg('Debes ingresar tu ID de barbero.');
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            API_RESERVAS + '/por-barbero/' + encodeURIComponent(idBarbero),
+            {
+              headers: { 'x-auth-token': token },
+            }
+          );
+          const data = await res.json();
+          if (!res.ok) {
+            setMsg(data.error || 'Error al obtener reservas');
+            return;
+          }
+
+          const tbody = document.getElementById('tabla-reservas');
+          tbody.innerHTML = '';
+          if (data.length === 0) {
+            setMsg('No hay reservas para este barbero.');
+            return;
+          }
+
+          data.forEach((r) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${r.id}</td>
+              <td>${new Date(r.fecha_hora_cita).toLocaleString()}</td>
+              <td>${r.id_usuario}</td>
+              <td>${r.codigo_atencion}</td>
+              <td>${r.estado_pdf}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error(err);
+          setMsg('Error de red al obtener reservas');
+        }
+      }
+
+      document
+        .getElementById('btn-cargar')
+        .addEventListener('click', cargarReservasBarbero);
+
+      ensureAuth();
+    </script>
+  </body>
+  </html>
+
+
